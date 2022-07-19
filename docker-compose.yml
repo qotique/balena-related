@@ -1,0 +1,7 @@
+version: "2"
+
+services:
+  balena-fastapi-app:
+    build: .
+    ports:
+      - "80:80"
