@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Characters</title>
+    <link href="{{ url_for('static', path='styles.css') }}" rel="stylesheet">
+</head>
+<body>
+
+<div class="wrapper">
+    {% for character in characters %}
+    <div>
+        <h1>{{ character.name }}</h1>
+        <h3>status: {{ character.status }}</h3>
+        <h3>species: {{ character.species }}</h3>
+        {% if character.type -%}
+        <h3>type: {{ character.type }}</h3>
+        {%- endif %}
+        <h3>location: {{ character.location.name }}</h3>
+        <div class="episodes">
+        {% for episode in character.episode %}
+        <br><a href="{{ episode.link }}">{{ episode.name }}</a></br>
+        {% endfor %}
+        </div>
+    </div>
+
+    {% endfor %}
+</div>
+</body>
+</html>

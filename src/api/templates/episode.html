@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ episode.name }}</title>
+    <link href="{{ url_for('static', path='styles.css') }}" rel="stylesheet">
+</head>
+<body>
+<div class="episode">
+    <h1>{{ episode.name }}</h1>
+    <h2>air date: {{ episode.air_date }}</h2>
+    <h2>code: {{ episode.episode }}</h2>
+    <h3>url: {{ episode.url }}</h3>
+</div>
+</body>
+</html>
