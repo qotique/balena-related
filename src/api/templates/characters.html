@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title%} Characters {% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+{% block content %}
+<div class="w3-border wrapper">
+    {% for character in characters %}
+    <div class="w3-card">
+        <div class="w3-container w3-red">{{ character.name }}</div>
+        <article class="w3-container">status: {{ character.status }}</article>
+        <article class="w3-container">species: {{ character.species }}</article>
+        {% if character.type -%}
+        <article class="w3-container">type: {{ character.type }}</article>
+        {%- endif %}
+        <article class="w3-container">location: {{ character.location.name }}</article>
+        <div class="w3-container">
+        {% for episode in character.episode %}
+        <a href="{{ episode.link }}">{{ episode.name }}</a>
+        {% endfor %}
+        </div>
+    </div>
+
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import time
 from abc import abstractmethod, ABC
 from pprint import pprint
 from typing import Dict, List, Union
@@ -67,7 +68,7 @@ class RequestParamsBuilder(Url):
 
     @abstractmethod
     def get_entity(self):
-        response = requests.get(self.url).json()
+        response = requests.get(self.url, headers={'User-agent': 'your bot 0.1'}).json()
         error = response.get('error', None)
         if error:
             return response
@@ -95,7 +96,6 @@ class GetCharacter(RequestParamsBuilder, ABC):
         )
 
         self.url = url + params
-        print(self.url)
 
     async def run_query(self):
         await super(GetCharacter, self).run_query()
@@ -128,7 +128,6 @@ class GetLocation(RequestParamsBuilder, ABC):
             )
         )
         self.url = url + parameters
-        print(self.url)
 
     async def run_query(self):
         await super(GetLocation, self).run_query()
@@ -159,7 +158,6 @@ class GetEpisode(RequestParamsBuilder, ABC):
             )
         )
         self.url = url + parameters
-        print(self.url)
 
     async def run_query(self):
         await super(GetEpisode, self).run_query()
@@ -175,13 +173,22 @@ class GetEpisode(RequestParamsBuilder, ABC):
             episodes.append(episode)
         return episodes
 
-    async def get_episode_by_id(self, id: int):
+    def get_episode_by_id(self, id: int):
         self.url = f'{BASE_URL}/episode/{id}'
-        response = requests.get(self.url).json()
-        episode = Episode(**response)
+        response = requests.get(
+            self.url,
+            headers={
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) '
+                              'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
+            }
+        )
+        if response.status_code == 429:
+            time.sleep(10)
+            self.get_episode_by_id(id)
+        obj = response.json()
+        episode = Episode(**obj)
         episode.link = f'episode{id}'
         return episode
-
 
 # async def main():
 #     request = await GetEpisode().get_episode_by_id(1)
