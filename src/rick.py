@@ -116,7 +116,6 @@ class GetCharacter(RequestParamsBuilder, ABC):
             character.link = f'character/{character.id}'
             character.episodes = len(character.episode)
             characters.append(character)
-        logging.warning(f'{len(characters)=}')
         return characters
 
     def get_character_by_id(self, id: int):
