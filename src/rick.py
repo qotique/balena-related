@@ -22,6 +22,8 @@ class Character(BaseModel):
     episode: List[str]
     url: str
     created: str
+    link: Union[str, None]
+    episodes: Union[int, None]
 
 
 class Location(BaseModel):
@@ -98,18 +100,41 @@ class GetCharacter(RequestParamsBuilder, ABC):
         self.url = url + params
 
     async def run_query(self):
-        await super(GetCharacter, self).run_query()
-        if len(response) == 1:
-            try:
-                return Character(**response[0])
-            except KeyError as error:
-                logging.error(error)
-                return response
+        response_ = requests.get(self.url)
+        if response_.status_code == 429:
+            time.sleep(10)
+            await self.run_query()
+        response_json = response_.json()
+        result = []
+        result.extend(response_json['results'])
+        while response_json['info']['next']:
+            response_json = requests.get(response_json['info']['next']).json()
+            result.extend(response_json['results'])
         characters = []
-        for character in response:
-            character = Character(**character)
+        for item in result:
+            character = Character(**item)
+            character.link = f'character/{character.id}'
+            character.episodes = len(character.episode)
             characters.append(character)
+        logging.warning(f'{len(characters)=}')
         return characters
+
+    def get_character_by_id(self, id: int):
+        self.url = f'{BASE_URL}/character/{id}'
+        response = requests.get(
+            self.url,
+            headers={
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) '
+                              'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
+            }
+        )
+        if response.status_code == 429:
+            time.sleep(10)
+            self.get_character_by_id(id)
+        obj = response.json()
+        character = Character(**obj)
+        character.link = f'character{id}'
+        return character
 
 
 class GetLocation(RequestParamsBuilder, ABC):
@@ -189,6 +214,10 @@ class GetEpisode(RequestParamsBuilder, ABC):
         episode = Episode(**obj)
         episode.link = f'episode{id}'
         return episode
+
+    def get_episode_by_url(self, url: str):
+        response = requests.get(url)
+        return Episode(**response.json())
 
 # async def main():
 #     request = await GetEpisode().get_episode_by_id(1)

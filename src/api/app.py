@@ -34,8 +34,8 @@ def info():
     return get_system_info()
 
 
-@api.get('/character', response_class=HTMLResponse)
-async def character(
+@api.get('/characters', response_class=HTMLResponse)
+async def characters(
         request: Request,
         name: Optional[Union[str, None]] = None,
         status: Optional[Union[str, None]] = None,
@@ -60,7 +60,6 @@ async def character(
     for item in result:
         for idx, i in enumerate(item.episode):
             episode = GetEpisode()
-            print(item, idx, i)
             thread = threading.Thread(
                 target=set_episode_link,
                 args=(episode.get_episode_by_id, item, idx, i)
@@ -107,10 +106,22 @@ async def episode_by_id(
     return templates.TemplateResponse('episode.html', {"request": request, "episode": result})
 
 
-@api.get('/characters')
-async def characters():
-    result = await GetCharacter().run_query()
-    return result
+@api.get('/character/{id}', response_class=HTMLResponse)
+async def character(
+        request: Request,
+        id: int
+):
+    result = GetCharacter().get_character_by_id(id)
+    result.episodes = len(result.episode)
+    episode = GetEpisode()
+    first_episode = episode.get_episode_by_url(result.episode[0])
+    return templates.TemplateResponse(
+        'character.html', {
+            "request": request,
+            "character": result,
+            "first_episode": first_episode
+        }
+    )
 
 
 @api.get('/locations')

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title%}
+{{character.name}}
+{% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block header %}
+    {{ super() }}
+{% endblock %}
+
+{% block content %}
+<div class="character-card">
+    <div class="w3-container"><img src="{{ character.image }}" alt="{{ character.name }}"></div>
+    <div class="w3-container">
+        <p>
+            It's {{ character.name }}.
+        </p>
+        <p>
+            {{ character.name }} is {{ character.species.lower() }} from {{ character.location.name }}
+        </p>
+        <p>
+            Could be {{ character.status.lower() }} for now.
+        </p>
+        <p>
+            First time seen in {{ first_episode.name }} ({{first_episode.episode}})
+        </p>
+        {% if character.type %}
+        <p>
+            {{ character.name }} is {{ character.type }}
+        </p>
+        {% endif %}
+        <p>
+            Seen in episodes: {{ character.episodes }}
+        </p>
+    </div>
+</div>
+
+
+{% endblock %}
