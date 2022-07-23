@@ -5,3 +5,15 @@ services:
     build: .
     ports:
       - "80:80"
+#  db:
+#    image: mysql:5.7
+#    ports:
+#        - '3306:3306'
+#    environment:
+#      MYSQL_DATABASE: 'db_django'
+#      MYSQL_USER: 'root'
+#      MYSQL_PASSWORD: 'password'
+#      MYSQL_ROOT_PASSWORD: 'password'
+#    restart: always
+#    volumes:
+#      - ./db_app:/var/lib/mysql

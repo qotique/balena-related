@@ -13,11 +13,12 @@ from fastapi.requests import Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.concurrency import run_in_threadpool
 
 from src.rick import GetCharacter, GetLocation, GetEpisode
+from src.rm_guide import RickAndMortyGuide
 
 api = FastAPI()
+app = RickAndMortyGuide()
 
 api.mount("/static", StaticFiles(directory="src/api/static"), name="static")
 
