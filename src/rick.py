@@ -32,6 +32,7 @@ class Character(Model):
     link: Union[str, None]
     episodes: Union[int, None]
 
+
 class Location(Model):
     id: int
     name: str

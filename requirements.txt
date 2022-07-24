@@ -3,3 +3,5 @@ uvicorn
 psutil
 requests
 jinja2
+sqlalchemy
+alembic
