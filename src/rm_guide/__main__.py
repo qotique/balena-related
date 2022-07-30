@@ -1,17 +1,28 @@
-
+import uuid
 from typing import List, Dict, Optional, Union
 
 import requests
 
-from src.rick import *
+from db.engine import DataBase
+from db.schemas import *
+from src.config import DB_URL
+from src.rick import BASE_URL
+
+
+def get_uuid_hex():
+    return uuid.uuid4().hex
 
 
 class RickAndMortyGuide:
     def __init__(self):
+        self.db = DataBase(DB_URL)
         self.api_url: str = BASE_URL
-        self.characters: Dict[int, Character] = self.init_characters()
-        self.episodes: Dict[int, Episode] = self.init_episodes()
-        self.locations: Dict[int, Location] = self.init_locations()
+
+        self.cache = {}
+        self.raw_characters = {}
+        self.raw_locations = {}
+        self.raw_episodes = {}
+        self.init_db()
 
     def get_raw_data(self, entity_name: str):
         result = []
@@ -24,54 +35,85 @@ class RickAndMortyGuide:
             result.extend(response_json['results'])
         return result
 
-    def init_characters(self):
-        raw_characters = self.get_raw_data('character')
-        characters: Dict[int, Character] = {}
-        for item in raw_characters:
-            character = Character(**item)
-            character.link = f'character/{character.id}'
-            character.episodes = len(character.episode)
-            characters[character.id] = character
-        # self.characters = characters
-        return characters
+    def init_db(self):
+        with self.db.session() as session:
+            self.init_characters(session)
+            self.init_locations(session)
+            self.init_episodes(session)
+            self.normalize_locations(session)
 
-    def init_locations(self):
-        raw_locations = self.get_raw_data('location')
-        locations: Dict[int, Location] = {}
-        for item in raw_locations:
-            location = Location(**item)
-            locations[location.id] = location
-        # self.locations = locations
-        return locations
+    def init_characters(self, session):
+        raw_characters_list = self.get_raw_data('character')
+        for item in raw_characters_list:
+            hash_hex = get_uuid_hex()
+            item['url'] = item['url'].replace(self.api_url, '')
+            self.raw_characters[hash_hex] = item
 
-    def init_episodes(self):
-        raw_episodes = self.get_raw_data('episode')
-        episodes: Dict[int, Episode] = {}
-        for item in raw_episodes:
-            episode = Episode(**item)
-            episode.link = f'episode/{episode.id}'
-            episodes[episode.id] = episode
-        # self.episodes = episodes
-        return episodes
+    def init_locations(self, session):
+        raw_locations_list = self.get_raw_data('location')
+        for item in raw_locations_list:
+            hash_hex = get_uuid_hex()
+            item['url'] = item['url'].replace(self.api_url, '')
+            self.raw_locations[hash_hex] = item
 
-    def guide_test(self):
-        self.extend_characters()
-        self.extend_episodes()
+    def init_episodes(self, session):
+        raw_episodes_list = self.get_raw_data('episode')
+        for item in raw_episodes_list:
+            hash_hex = get_uuid_hex()
+            item['url'] = item['url'].replace(self.api_url, '')
+            self.raw_episodes[hash_hex] = item
 
-    def extend_characters(self):
-        for idx, character in self.characters.items():
-            for idx_, episode in enumerate(character.episode):
-                character.episode[idx_] = self.episodes.get(int(episode.rsplit('/', 1)[1])) # noqa
+    def normalize_locations(self, session):
+        """"""
+        def find_location_hash(name):
+            for location_hash, location in self.raw_locations.items():
+                if location['name'] == name:
+                    return location_hash
 
-    def extend_episodes(self):
-        for idx, episode in self.episodes.items():
-            for idx_, character in enumerate(episode.characters):
-               episode.characters[idx_] = self.characters.get(int(character.rsplit('/', 1)[1]))
+        def find_episode_hash(episode_id):
+            for episode_hash, episode in self.raw_episodes.items():
+                if int(episode['id']) == int(episode_id):
+                    return episode_hash
 
-    def extend_locations(self):
-        for idx, location in self.locations.items():
-            for idx_, resident in enumerate(location.residents):
-                location.residents[idx_] = self.characters.get(int(resident.rsplit('/', 1)[1]))
+        def find_character_hash(character_id):
+            for character_hash, character in self.raw_characters.items():
+                if int(character['id']) == int(character_id):
+                    return character_hash
+
+        for character_hash, character_dict in self.raw_characters.items():
+            origin_idx = character_dict['origin']['url'].replace(f'{self.api_url}/location/', '')
+            origin_name = character_dict['origin']['name']
+            location_name = character_dict['location']['name']
+            character_dict['origin'] = find_location_hash(origin_name)
+            character_dict['location'] = find_location_hash(location_name)
+            for idx, episode_url in enumerate(character_dict['episode']):
+                episode_id = episode_url.replace(f'{self.api_url}/episode/', '')
+                character_dict['episode'][idx] = find_episode_hash(episode_id)
+            character_dict['episode'] = ','.join(character_dict['episode'])
+            character_object = Character(hash=character_hash, **character_dict)
+            session.add(character_object)
+        session.commit()
+        print('Normalized and loaded characters')
+
+        for episode_hash, episode_dict in self.raw_episodes.items():
+            for idx, character_url in enumerate(episode_dict['characters']):
+                character_id = character_url.replace(f'{self.api_url}/character/', '')
+                episode_dict['characters'][idx] = find_character_hash(character_id)
+            episode_dict['characters'] = ','.join(episode_dict['characters'])
+            episode_object = Episode(hash=episode_hash, **episode_dict)
+            session.add(episode_object)
+        session.commit()
+        print('Normalized and loaded episodes')
+
+        for location_name, location_dict in self.raw_locations.items():
+            for idx, character_url in enumerate(location_dict['residents']):
+                character_id = character_url.replace(f'{self.api_url}/character/', '')
+                location_dict['residents'][idx] = find_character_hash(character_id)
+            location_dict['residents'] = ','.join(location_dict['residents'])
+            location_object = Location(hash=location_name, **location_dict)
+            session.add(location_object)
+        session.commit()
+        print('Normalized and loaded locations')
 
 
 def get_characters(
@@ -105,6 +147,4 @@ def get_characters(
 
 
 if __name__ == '__main__':
-    print(get_characters(name='rick', status='dead', type_='clone'))
-
-
+    app = RickAndMortyGuide()

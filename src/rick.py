@@ -9,7 +9,7 @@ import requests
 
 BASE_URL = 'https://rickandmortyapi.com/api'
 
-__all__ = ['Character', 'Episode', 'Location', 'BASE_URL']
+__all__ = ('Character', 'Episode', 'Location', 'BASE_URL',)
 
 
 class Model(BaseModel):
@@ -18,6 +18,7 @@ class Model(BaseModel):
 
 
 class Character(Model):
+    hash: str
     id: int
     name: str
     status: str
@@ -30,10 +31,12 @@ class Character(Model):
     url: str
     created: str
     link: Union[str, None]
-    episodes: Union[int, None]
+    episodes: Union[str, None]
+    gender: str
 
 
 class Location(Model):
+    hash: str
     id: int
     name: str
     type: str
@@ -44,6 +47,7 @@ class Location(Model):
 
 
 class Episode(Model):
+    hash: str
     id: int
     name: str
     air_date: str
