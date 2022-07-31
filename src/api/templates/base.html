@@ -2,21 +2,57 @@
 <html lang="en">
 <head>
     {% block head %}
-    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}" />
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-    <title>{% block title %}{% endblock %} - My Webpage</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    {% block styles %}
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    {% endblock %}
+    <title>
+        {% block title %}{% endblock %}
+        - Rick and Morty Guide
+    </title>
     {% endblock %}
 </head>
 <body>
     {% block header %}
-    <div class="header w3-red">
-    </div>
     {% endblock %}
-    <div id="content">{% block content %}{% endblock %}</div>
+
+    {% block navbar %}
+    <ul class="nav justify-content-center">
+        <li class="nav-item">
+            <a class="nav-link active" href="/characters?">
+                Characters
+                <span class="badge badge-primary">New</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link disabled"  href="#">
+                Episodes
+                <span class="badge badge-secondary">Inactive</span>
+            </a>
+        </li>
+        <li class="nav-item disabled">
+            <a class="nav-link disabled" href="#">
+                Locations
+                <span class="badge badge-secondary">Inactive</span>
+            </a>
+        </li>
+    </ul>
+    {% endblock %}
+
+    <div id="content">
+        {% block content %}
+        {% endblock %}
+    </div>
     <div id="footer", class="w3-container w3-red">
         {% block footer %}
         &copy; Copyright 2008 by <a href="/characters">you</a>.
         {% endblock %}
     </div>
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+{% endblock %}
 </body>
 </html>

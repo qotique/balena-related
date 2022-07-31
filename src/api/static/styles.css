@@ -73,10 +73,10 @@ div.polaroid {
   margin-bottom: 25px;
   height: auto;
 }
-div.container {
-  text-align: center;
-  padding: 10px 20px;
-}
+/*div.container {*/
+/*  text-align: center;*/
+/*  padding: 10px 20px;*/
+/*}*/
 .image {
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -112,10 +112,10 @@ div.container {
   display: inline-grid;
 }
 div.character-card {
-	display: grid;
+	display: flex;
 	grid-template-columns: 30% 70%;
-    padding-left: 20%;
-    padding-right: 20%;
+    padding: 0;
+
 }
 .character-card-mini {
 	display: grid;

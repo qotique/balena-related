@@ -70,13 +70,16 @@ class Get:
             characters.species,
             characters.image,
             characters.url,
+            characters.gender,
             l.name as origin,
             l2.name as location
             from characters
             join locations l on origin = l.hash
             join locations l2 on location = l2.hash
-            where {whereclause}
             """
+            if keywords:
+                sql_string += f'where {whereclause}'
+            sql_string += ' order by characters.name'
             print(sql_string)
             characters = session.execute(sql_string, keywords).all()
         try:
@@ -157,8 +160,17 @@ class Get:
             episode = episode_query.first()
         return episode
 
+    @staticmethod
+    def location(location_hash):
+        db = DataBase(DB_URL)
+        with db.session() as session:
+            location_query = session.query(Location).filter(Location.hash == location_hash)
+            location = location_query.first()
+        return location
+
 
 if __name__ == '__main__':
     Get.characters(name='rick', status='dead', type_='clone')
     Get.locations(name='earth')
     Get.episodes(episode='s01e01')
+    print(Get.location(location_hash='8d4f6a0e45e8472db771200ffabb3fc0'))

@@ -5,6 +5,7 @@ import re
 import socket
 import threading
 import uuid
+from math import ceil
 from typing import Union, Optional
 import psutil
 import uvicorn
@@ -27,10 +28,13 @@ api.mount("/static", StaticFiles(directory="src/api/static"), name="static")
 templates = Jinja2Templates(directory="src/api/templates")
 
 
-@api.get('/')
-async def home():
+@api.get('/', response_class=HTMLResponse)
+async def home(request: Request):
     debug_info = {'running_on': platform.machine()}
-    return debug_info
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "debug_info": debug_info}
+    )
 
 
 @api.get('/info')
@@ -47,12 +51,16 @@ async def characters(
         type: Optional[Union[str, None]] = None,
         gender: Optional[Union[str, None]] = None,
 ):
-    result = Get.characters(name, status, species, type, gender)
+    characters = Get.characters(name, status, species, type, gender)
+    # we need to ceil chars for rows and columns
+    characters_rows = list(range(0, ceil(len(characters)/3)))
+
     return templates.TemplateResponse(
         "characters.html",
         {
             "request": request,
-            "characters": result,
+            "characters": characters,
+            "characters_rows": characters_rows,
         }
     )
 
@@ -100,13 +108,15 @@ async def character(
     character = Get.character(id)
     character.episodes = len(character.episode.split(','))
     first_episode_hash = character.episode.split(',')[0]
+    origin_hash = character.origin
     first_episode = Get.episode(first_episode_hash)
-
+    origin = Get.location(origin_hash)
     return templates.TemplateResponse(
         'character.html', {
             "request": request,
             "character": character,
-            "first_episode": first_episode
+            "first_episode": first_episode,
+            "origin": origin,
         }
     )
 

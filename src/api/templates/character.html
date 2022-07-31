@@ -13,31 +13,20 @@
 {% endblock %}
 
 {% block content %}
-<div class="character-card">
-    <div class="w3-container"><img src="{{ character.image }}" alt="{{ character.name }}"></div>
-    <div class="w3-container">
-        <p>
-            It's {{ character.name }}.
+<div class="jumbotron">
+    <h1 class="lead", style="font-size: 2em"><b>{{ character.name }}</h1>
+    <h1 class="display-4">
+        <img src="{{ character.image }}" alt="{{ character.name }}">
+        <hr class="my-4">
+        <p class="lead">
+            It's {{ character.name }}
+            from {{ origin.name }}.
+            {{ character.gender }}
+            {% if character.type %}
+            , {{ character.type.lower() }}
+            {% endif %}.
+            <br> First time seen in {{ first_episode.name }}
         </p>
-        <p>
-            {{ character.name }} is {{ character.species.lower() }} from {{ character.location.name }}
-        </p>
-        <p>
-            Could be {{ character.status.lower() }} for now.
-        </p>
-        <p>
-            First time seen in {{ first_episode.name }} ({{first_episode.episode}})
-        </p>
-        {% if character.type %}
-        <p>
-            {{ character.name }} is {{ character.type }}
-        </p>
-        {% endif %}
-        <p>
-            Seen in episodes: {{ character.episodes }}
-        </p>
-    </div>
+    </h1>
 </div>
-
-
 {% endblock %}
