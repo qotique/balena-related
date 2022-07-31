@@ -135,14 +135,11 @@ def get_characters(
     }
     app = RickAndMortyGuide()
     chars = [char for char in app.characters.values()]
-    print(len(chars))
     for idx, item in enumerate(chars):
         for key, value in keywords.items():
             print(item[key].lower() == value.lower())
             if item[key].lower() != value.lower():
-                print(idx)
                 chars.pop(idx)
-    print(f'{len(chars)=}')
     return chars
 
 

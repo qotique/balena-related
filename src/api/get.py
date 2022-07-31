@@ -47,18 +47,18 @@ class Get:
             'status': status,
             'species': species,
             'type': type_,
-            'gender': gender
+            'gender': gender,
         }
         model_mapping = {
-            'name': Character.name,
-            'status': Character.status,
-            'species': Character.species,
-            'type': Character.type,
-            'gender': Character.gender,
+            'name': 'characters.name',
+            'status': 'characters.status',
+            'species': 'characters.species',
+            'type': 'characters.type',
+            'gender': 'characters.gender',
         }
-        keywords_ = {model_mapping[k]: v for k, v in keywords.items() if v}
-        print(keywords_)
-        whereclause = and_((k.like(f'%{v}') for k, v in keywords_.items()))
+        keywords = {k: f'%{v}' for k, v in keywords.items() if v}
+        print(keywords)
+        whereclause = ' and '.join([f'{model_mapping[k]} like :{k}' for k, _ in keywords.items()])
         print(whereclause)
         with db.session() as session:
             sql_string = f"""
@@ -68,17 +68,20 @@ class Get:
             characters.status,
             characters.type,
             characters.species,
+            characters.image,
             l.name as origin,
             l2.name as location
             from characters
             join locations l on origin = l.hash
             join locations l2 on location = l2.hash
+            where {whereclause}
             """
             print(sql_string)
-            characters = session.execute(sql_string).filter(whereclause).all()
+            characters = session.execute(sql_string, keywords).all()
 
         for idx, character in enumerate(characters):
-            characters[idx] = CharacterRepresentation()
+            print(character)
+            # characters[idx] = CharacterRepresentation()
         return characters
 
     @staticmethod
