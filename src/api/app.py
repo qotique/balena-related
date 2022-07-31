@@ -29,7 +29,8 @@ templates = Jinja2Templates(directory="src/api/templates")
 
 @api.get('/')
 async def home():
-    return {'hello': 'world'}
+    debug_info = {'running_on': platform.machine()}
+    return debug_info
 
 
 @api.get('/info')
@@ -97,9 +98,9 @@ async def character(
         id: int
 ):
     character = Get.character(id)
-    character.episodes = len(character.episode)
-    episode = None
-    first_episode = None
+    character.episodes = len(character.episode.split(','))
+    first_episode_hash = character.episode.split(',')[0]
+    first_episode = Get.episode(first_episode_hash)
 
     return templates.TemplateResponse(
         'character.html', {

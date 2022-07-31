@@ -69,6 +69,7 @@ class Get:
             characters.type,
             characters.species,
             characters.image,
+            characters.url,
             l.name as origin,
             l2.name as location
             from characters
@@ -78,9 +79,12 @@ class Get:
             """
             print(sql_string)
             characters = session.execute(sql_string, keywords).all()
-
-        for idx, character in enumerate(characters):
-            print(character)
+        try:
+            for idx, character in enumerate(characters):
+                print(character)
+        except UnboundLocalError as error:
+            print(keywords)
+            characters = []
             # characters[idx] = CharacterRepresentation()
         return characters
 
@@ -144,6 +148,14 @@ class Get:
             character_query = session.query(Character).filter(Character.id == id_)
             character = character_query.first()
         return character
+
+    @staticmethod
+    def episode(episode_hash):
+        db = DataBase(DB_URL)
+        with db.session() as session:
+            episode_query = session.query(Episode).filter(Episode.hash == episode_hash)
+            episode = episode_query.first()
+        return episode
 
 
 if __name__ == '__main__':
