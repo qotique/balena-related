@@ -8,12 +8,12 @@
     {% for character in characters %}
     <div class="characters-view-card w3-border character-card-mini">
         <div class="w3-container">
-            <div class="w3-container w3-red">status: {{ character.status }}</div>
+            <div class="w3-container w3-red">STATUS: {{ character.status.upper() }}</div>
             {% if character.type -%}
             <article>type: {{ character.type }}</article>
             {%- endif %}
             <article>species: {{ character.species }}</article>
-            <article>location: {{ character.location.name }}</article>
+            <article>location: {{ character.location }}</article>
         </div>
         <div class="character-card-photo">
             <div class="polaroid">
@@ -21,7 +21,7 @@
             </div>
             <div class="container w3-red">
                 <button class="button">
-                    <a href="{{character.link}}">
+                    <a href="{{character.url}}">
                         <p>{{ character.name }}</p>
                     </a>
                 </button>

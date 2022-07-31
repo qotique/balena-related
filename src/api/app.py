@@ -14,12 +14,14 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from db.engine import DataBase
+from src.api.get import Get
+from src.config import DB_URL
 from src.rick import GetCharacter, GetLocation, GetEpisode
 from src.rm_guide import RickAndMortyGuide
 
 api = FastAPI()
-app = RickAndMortyGuide()
-
+db = DataBase(DB_URL)
 api.mount("/static", StaticFiles(directory="src/api/static"), name="static")
 
 templates = Jinja2Templates(directory="src/api/templates")
@@ -27,7 +29,8 @@ templates = Jinja2Templates(directory="src/api/templates")
 
 @api.get('/')
 async def home():
-    return {'hello': 'world'}
+    debug_info = {'running_on': platform.machine()}
+    return debug_info
 
 
 @api.get('/info')
@@ -44,32 +47,14 @@ async def characters(
         type: Optional[Union[str, None]] = None,
         gender: Optional[Union[str, None]] = None,
 ):
-    def set_episode_link(getter, item, idx, i):
-        item.episode[idx] = getter(
-            i.replace('https://rickandmortyapi.com/api/episode', '')
-        )
-
-    threads = []
-    result = await GetCharacter(
-        name=name,
-        status=status,
-        species=species,
-        type_=type,
-        gender=gender,
-    ).run_query()
-
-    for item in result:
-        for idx, i in enumerate(item.episode):
-            episode = GetEpisode()
-            thread = threading.Thread(
-                target=set_episode_link,
-                args=(episode.get_episode_by_id, item, idx, i)
-            )
-            thread.start()
-            threads.append(thread)
-    for thread_ in threads:
-        thread_.join()
-    return templates.TemplateResponse("characters.html", {"request": request, "characters": result})
+    result = Get.characters(name, status, species, type, gender)
+    return templates.TemplateResponse(
+        "characters.html",
+        {
+            "request": request,
+            "characters": result,
+        }
+    )
 
 
 @api.get('/location')
@@ -112,14 +97,15 @@ async def character(
         request: Request,
         id: int
 ):
-    result = GetCharacter().get_character_by_id(id)
-    result.episodes = len(result.episode)
-    episode = GetEpisode()
-    first_episode = episode.get_episode_by_url(result.episode[0])
+    character = Get.character(id)
+    character.episodes = len(character.episode.split(','))
+    first_episode_hash = character.episode.split(',')[0]
+    first_episode = Get.episode(first_episode_hash)
+
     return templates.TemplateResponse(
         'character.html', {
             "request": request,
-            "character": result,
+            "character": character,
             "first_episode": first_episode
         }
     )
