@@ -106,10 +106,14 @@ async def character(
         id: int
 ):
     character = Get.character(id)
-    character.episodes = len(character.episode.split(','))
+    character.episodes = character.episode.split(',')
+    character.episodes = [Get.episode(hash_) for hash_ in character.episodes]
+    for episode in character.episodes:
+        episode.episode = f'episodes/{episode.episode}.jpg'
     first_episode_hash = character.episode.split(',')[0]
     origin_hash = character.origin
     first_episode = Get.episode(first_episode_hash)
+    first_episode.episode = f'episodes/{first_episode.episode}.jpg'
     origin = Get.location(origin_hash)
     return templates.TemplateResponse(
         'character.html', {

@@ -18,3 +18,5 @@ class Episode(Base):
     url = Column('url', String(255))
     created = Column('created', String(128))
     link = Column('link', String(128))
+    image = Column('image', String)
+
