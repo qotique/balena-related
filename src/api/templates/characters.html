@@ -4,19 +4,24 @@
     {{ super() }}
 {% endblock %}
 {% block content %}
-<div class="container">
+{{ super() }}
     {% set rows = 3 %}
     {% set cols = 3 %}
     {% for character in characters %}
     {% if loop.index0 // rows != (loop.index0 - 1) // rows %}
         <div class="row">
     {% endif %}
-        <div class="col-lg-4", style="width: 33%">
+        <div class="col-lg-4" style="width: 33%">
             <div class="card">
                 <div class="card-header"  style="background-color: #f44336">{{ character.name }}</div>
                 <img class="card-img-top" src="{{ character.image }}" alt="{{ character.name }}">
-                <button class="btn btn-primary" style="background-color: #f44336" type="button" data-toggle="collapse" data-target="#collapse.{{ character.name }}" aria-expanded="false" aria-controls="collapse.{{ character.name }}">
-                        Expand
+                <button class="btn btn-primary"
+                        style="background-color: #f44336"
+                        type="button" data-toggle="collapse"
+                        data-target="#collapse.{{ character.name }}"
+                        aria-expanded="false"
+                        aria-controls="collapse.{{ character.name }}">
+                    expand
                 </button>
                 <div class="collapse" id="collapse.{{ character.name }}">
                     <ul class="list-group list-group-flush">
@@ -45,6 +50,5 @@
     {% if loop.index0 % cols == 2 %}
         </div>
     {% endif %}
-
     {% endfor %}
-{% endblock %}
+    {% endblock %}
